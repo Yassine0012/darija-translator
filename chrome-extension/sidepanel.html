@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Darija Translator</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; font-size: 14px; color: #1f2933; }
+    h1 { font-size: 16px; margin: 0 0 10px; }
+    label { display: block; font-weight: 600; margin: 10px 0 4px; }
+    textarea, input, select { width: 100%; box-sizing: border-box; padding: 6px; font: inherit;
+      border: 1px solid #c4ccd4; border-radius: 6px; }
+    textarea { min-height: 90px; resize: vertical; }
+    .row { display: flex; gap: 6px; margin-top: 8px; }
+    button { padding: 7px 12px; border: 0; border-radius: 6px; background: #1a73e8; color: #fff;
+      font: inherit; cursor: pointer; }
+    button.secondary { background: #e8eaed; color: #1f2933; }
+    button:disabled { opacity: .5; cursor: default; }
+    #output { min-height: 60px; padding: 8px; border: 1px solid #c4ccd4; border-radius: 6px;
+      background: #f7f9fb; font-size: 18px; line-height: 1.6; white-space: pre-wrap; }
+    #status { margin-top: 8px; min-height: 18px; color: #5f6b76; }
+    #status.error { color: #c5221f; }
+    details { margin-top: 16px; }
+    summary { cursor: pointer; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <h1>Darija Translator</h1>
+
+  <label for="source">Source language</label>
+  <select id="source">
+    <option value="">Auto-detect</option>
+    <option value="en">English</option>
+    <option value="fr">French</option>
+    <option value="es">Spanish</option>
+    <option value="ar">Arabic (MSA)</option>
+  </select>
+
+  <label for="input">Text</label>
+  <textarea id="input" placeholder="Type, or select text on a page and right-click → Translate to Darija"></textarea>
+  <div class="row">
+    <button id="translate">Translate</button>
+    <button id="clear" class="secondary">Clear</button>
+  </div>
+
+  <label>Darija</label>
+  <div id="output" dir="rtl" lang="ar"></div>
+  <div class="row">
+    <button id="speak" class="secondary">🔊 Read aloud</button>
+    <button id="copy" class="secondary">Copy</button>
+  </div>
+  <div id="status"></div>
+
+  <details id="settings">
+    <summary>Settings</summary>
+    <label for="url">Endpoint URL</label>
+    <input id="url" type="text">
+    <label for="user">Username</label>
+    <input id="user" type="text" autocomplete="off">
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="off">
+    <div class="row"><button id="save">Save settings</button></div>
+  </details>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>
