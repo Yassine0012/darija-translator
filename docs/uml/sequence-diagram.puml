@@ -1,0 +1,33 @@
+@startuml
+title Diagramme de sequence - traduction d'un texte selectionne
+skinparam shadowing false
+autonumber
+
+actor Utilisateur as U
+participant "Extension Chrome\n(side panel)" as Ext
+participant "Tomcat\n(conteneur)" as T
+participant "BasicAuthModule\n(Jakarta Authentication)" as Auth
+participant "TranslatorResource\n(Jersey)" as R
+participant GeminiClient as G
+participant "API Gemini" as LLM
+
+U -> Ext : selectionne un texte,\nclic droit > "Translate to Darija"
+Ext -> T : POST /api/translate\n{"text": "...", "source": ""}\nAuthorization: Basic ...
+T -> Auth : validateRequest(messageInfo, ...)
+alt identifiants valides
+  Auth -> T : CallerPrincipalCallback + GroupPrincipalCallback\n(role "translator")
+  Auth --> T : AuthStatus.SUCCESS
+  T -> R : translate(TranslationRequest)
+  R -> G : translate(text, source)
+  G -> LLM : POST generateContent\n(prompt systeme : traduire en Darija)
+  LLM --> G : texte traduit
+  G --> R : traduction
+  R --> T : TranslationResponse
+  T --> Ext : 200 OK {"translation": "..."}
+  Ext --> U : affiche la traduction\n(+ lecture a voix haute)
+else identifiants absents ou incorrects
+  Auth --> T : AuthStatus.SEND_CONTINUE\n(401 + WWW-Authenticate)
+  T --> Ext : 401 Unauthorized
+  Ext --> U : "Authentication failed"
+end
+@enduml

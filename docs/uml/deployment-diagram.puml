@@ -1,0 +1,47 @@
+@startuml
+title Diagramme de deploiement - Darija Translator
+skinparam shadowing false
+skinparam nodeStyle rectangle
+
+cloud "Internet" as net {
+  node "Google Cloud" as google {
+    artifact "Gemini API\n(generativelanguage.googleapis.com)" as gemini
+  }
+}
+
+node "PC de developpement\n(serveur)  -  port 8080" as server {
+  node "JVM 17+" as jvm {
+    node "Tomcat 10.1 embarque" as tomcat {
+      component "Jakarta Authentication\nBasicAuthModule" as auth
+      component "Jersey (Jakarta REST)\nTranslatorResource" as rest
+      component "GeminiClient" as gc
+    }
+  }
+}
+
+node "Poste client (meme PC)" as pc {
+  node "Navigateur Chrome" as chrome {
+    artifact "Extension Manifest V3\n(side panel)" as ext
+  }
+  node "Python 3" as py {
+    artifact "translate_client.py" as pyc
+  }
+  node "PHP 8 (php -S :8000)" as php {
+    artifact "index.php" as phpc
+  }
+}
+
+node "Telephone (meme Wi-Fi)" as phone {
+  node "Expo Go" as expo {
+    artifact "App React Native\n(App.js)" as rn
+  }
+}
+
+ext --> auth : HTTP POST /api/translate\nAuthorization: Basic
+pyc --> auth : HTTP + Basic
+phpc --> auth : HTTP + Basic (cURL)
+rn --> auth : HTTP + Basic\n(via IP locale du PC, Wi-Fi)
+auth --> rest : appel autorise\n(role "translator")
+rest --> gc
+gc --> gemini : HTTPS + cle API\n(variable GEMINI_API_KEY)
+@enduml

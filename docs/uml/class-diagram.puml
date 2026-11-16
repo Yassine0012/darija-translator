@@ -1,0 +1,89 @@
+@startuml
+title Diagramme de classes - Darija Translator (service REST)
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+set separator none
+skinparam nodesep 40
+skinparam ranksep 50
+
+package "ma.translator" {
+  class Main {
+    + {static} main(args : String[]) : void
+  }
+  class TranslatorResource <<@Path("/translate")>> {
+    - {static} GEMINI : GeminiClient
+    + translate(request : TranslationRequest) : TranslationResponse
+  }
+  class GeminiClient {
+    - apiKey : String
+    - model : String
+    - http : HttpClient
+    + translate(text : String, source : String) : String
+  }
+  class TranslationRequest <<record>> {
+    + text : String
+    + source : String
+  }
+  class TranslationResponse <<record>> {
+    + translation : String
+  }
+}
+
+package "ma.translator.auth" {
+  class BasicAuthConfigProvider {
+    + getServerAuthConfig(layer, appContext, handler) : ServerAuthConfig
+    + getClientAuthConfig(layer, appContext, handler) : ClientAuthConfig
+    + refresh() : void
+  }
+  class "Config" as Config <<inner class>> {
+    + getAuthContext(id, subject, props) : ServerAuthContext
+    + getMessageLayer() : String
+    + getAppContext() : String
+  }
+  class BasicAuthModule {
+    + {static} ROLE : String
+    - handler : CallbackHandler
+    + initialize(...) : void
+    + validateRequest(info, client, service) : AuthStatus
+    + secureResponse(info, service) : AuthStatus
+    + cleanSubject(info, subject) : void
+    - parseBasicHeader(header : String) : String[]
+  }
+}
+
+package "Jakarta Authentication (API)" {
+  interface AuthConfigProvider <<interface>>
+  interface ServerAuthConfig <<interface>>
+  interface ServerAuthContext <<interface>>
+  interface ServerAuthModule <<interface>>
+  class AuthConfigFactory
+}
+
+package "Conteneur embarque" {
+  class Tomcat <<Apache Tomcat 10.1>>
+  class ServletContainer <<Jersey, Jakarta REST>>
+}
+
+package "Service externe" {
+  class "Gemini API" as Gemini <<HTTPS>>
+}
+
+BasicAuthConfigProvider ..|> AuthConfigProvider
+Config ..|> ServerAuthConfig
+BasicAuthModule ..|> ServerAuthModule
+BasicAuthConfigProvider *-- Config
+Config ..> BasicAuthModule : cree
+Config ..> ServerAuthContext : retourne
+
+Main ..> Tomcat : demarre
+Main ..> ServletContainer : declare servlet /api/*
+Main ..> AuthConfigFactory : registerConfigProvider()
+Main ..> BasicAuthConfigProvider : instancie
+ServletContainer ..> TranslatorResource : route POST /api/translate
+TranslatorResource --> GeminiClient : utilise
+TranslatorResource ..> TranslationRequest
+TranslatorResource ..> TranslationResponse
+GeminiClient ..> Gemini : generateContent
+AuthConfigFactory o-- AuthConfigProvider
+@enduml
