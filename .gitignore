@@ -1,0 +1,14 @@
+# Java / Maven
+target/
+*.class
+# Node / Expo
+node_modules/
+.expo/
+# Python
+__pycache__/
+*.pyc
+# Secrets and IDE files
+.env
+.idea/
+*.iml
+.vscode/
